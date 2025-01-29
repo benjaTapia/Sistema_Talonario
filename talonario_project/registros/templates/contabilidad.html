@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block title %}Contabilidad{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Contabilidad</h1>
+
+    <!-- Texto explicativo -->
+    <div class="alert alert-info text-center">
+        <p>Esta sección muestra un resumen de la contabilidad del sistema, incluyendo el estado de resultados y el libro mayor dividido en convenios y aportes.</p>
+        <p>La tabla "Estado de Resultados" presenta los totales de ingresos y egresos, además de la ganancia o pérdida calculada. Las tablas de "Libro Mayor" detallan cada transacción registrada.</p>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="d-flex justify-content-center mb-4">
+        <div class="me-4">
+            <span class="badge bg-danger">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>: Valores negativos (pérdidas o saldos en contra)</span>
+        </div>
+        <div>
+            <span class="badge bg-success">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>: Valores positivos (ganancias o saldos a favor)</span>
+        </div>
+    </div>
+
+    <!-- Estado de Resultados -->
+    <div id="estado-resultados" class="mt-3">
+        <h3 class="text-center mb-3">Estado de Resultados</h3>
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Descripción</th>
+                    <th class="text-end">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total Ingresos</td>
+                    <td class="text-end text-success fw-bold">{{ estado_resultados.ingresos|add_commas }}</td>
+                </tr>
+                <tr>
+                    <td>Total Egresos</td>
+                    <td class="text-end text-danger fw-bold">{{ estado_resultados.egresos|add_commas }}</td>
+                </tr>
+                <tr class="{% if estado_resultados.ganancia_perdida >= 0 %}table-success{% else %}table-danger{% endif %}">
+                    <td>Ganancia/Pérdida</td>
+                    <td class="text-end fw-bold {% if estado_resultados.ganancia_perdida < 0 %}text-danger{% else %}text-success{% endif %}">{{ estado_resultados.ganancia_perdida|add_commas }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Navegación principal -->
+    <ul class="nav nav-tabs justify-content-center mt-4">
+        <li class="nav-item">
+            <button class="nav-link {% if active_tab == 'convenios' %}active{% endif %}" onclick="showSubTab('convenios')">Convenios</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link {% if active_tab == 'aportes' %}active{% endif %}" onclick="showSubTab('aportes')">Aportes</button>
+        </li>
+    </ul>
+
+    <!-- Contenido de Convenios -->
+    <div id="convenios" class="sub-tab-content {% if active_tab == 'convenios' %}d-block{% else %}d-none{% endif %}">
+        <h3 class="text-center mb-3">Registros de Convenios</h3>
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Folio</th>
+                    <th>Descripción</th>
+                    <th class="text-end">Debe</th>
+                    <th class="text-end">Haber</th>
+                    <th class="text-end">Saldo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in libro_mayor_convenios %}
+                <tr>
+                    <td>{{ registro.fecha_creacion|date:"Y-m-d" }}</td>
+                    <td>{{ registro.folio }}</td>
+                    <td>{{ registro.nombre_registro }}</td>
+                    <td class="text-end fw-bold">{{ registro.debe|add_commas }}</td>
+                    <td class="text-end fw-bold">{{ registro.haber|add_commas }}</td>
+                    <td class="text-end fw-bold {% if registro.saldo < 0 %}text-danger{% else %}text-success{% endif %}">{{ registro.saldo|add_commas }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay registros de convenios.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginador -->
+        <div class="d-flex justify-content-center">
+            <nav>
+                <ul class="pagination">
+                    {% if libro_mayor_convenios.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?convenios_page={{ libro_mayor_convenios.previous_page_number }}&active_tab=convenios">Anterior</a>
+                    </li>
+                    {% endif %}
+                    {% for num in libro_mayor_convenios.paginator.page_range %}
+                    <li class="page-item {% if num == libro_mayor_convenios.number %}active{% endif %}">
+                        <a class="page-link" href="?convenios_page={{ num }}&active_tab=convenios">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if libro_mayor_convenios.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?convenios_page={{ libro_mayor_convenios.next_page_number }}&active_tab=convenios">Siguiente</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Contenido de Aportes -->
+    <div id="aportes" class="sub-tab-content {% if active_tab == 'aportes' %}d-block{% else %}d-none{% endif %}">
+        <h3 class="text-center mb-3">Registros de Aportes</h3>
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Folio</th>
+                    <th>Descripción</th>
+                    <th class="text-end">Debe</th>
+                    <th class="text-end">Haber</th>
+                    <th class="text-end">Saldo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in libro_mayor_aportes %}
+                <tr>
+                    <td>{{ registro.fecha_creacion|date:"Y-m-d" }}</td>
+                    <td>{{ registro.folio }}</td>
+                    <td>{{ registro.nombre_registro }}</td>
+                    <td class="text-end fw-bold">{{ registro.debe|add_commas }}</td>
+                    <td class="text-end fw-bold">{{ registro.haber|add_commas }}</td>
+                    <td class="text-end fw-bold {% if registro.saldo < 0 %}text-danger{% else %}text-success{% endif %}">{{ registro.saldo|add_commas }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay registros de aportes.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginador -->
+        <div class="d-flex justify-content-center">
+            <nav>
+                <ul class="pagination">
+                    {% if libro_mayor_aportes.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?aportes_page={{ libro_mayor_aportes.previous_page_number }}&active_tab=aportes">Anterior</a>
+                    </li>
+                    {% endif %}
+                    {% for num in libro_mayor_aportes.paginator.page_range %}
+                    <li class="page-item {% if num == libro_mayor_aportes.number %}active{% endif %}">
+                        <a class="page-link" href="?aportes_page={{ num }}&active_tab=aportes">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if libro_mayor_aportes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?aportes_page={{ libro_mayor_aportes.next_page_number }}&active_tab=aportes">Siguiente</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Botones de acción -->
+<div class="text-center mt-4">
+    <a href="{% url 'registros:exportar_excel_contabilidad' %}" class="btn btn-success fw-bold px-4 py-2 me-2">
+        <i class="fas fa-file-excel"></i> EXPORTAR A EXCEL
+    </a>
+    <a href="{% url 'registros:lista_registros' %}" class="btn btn-warning fw-bold px-4 py-2 me-2">
+        <i class="fas fa-arrow-left"></i> VOLVER
+    </a>
+    <a href="{% url 'registros:exportar_pdf_contabilidad' %}" target="_blank" class="btn btn-danger fw-bold px-4 py-2">
+        <i class="fas fa-file-pdf"></i> EXPORTAR A PDF
+    </a>
+</div>
+
+<script>
+    function showSubTab(subTabId) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('active_tab', subTabId);
+        url.searchParams.delete('convenios_page'); 
+        url.searchParams.delete('aportes_page'); 
+        window.location.href = url.toString();
+    }
+</script>
+{% endblock %}

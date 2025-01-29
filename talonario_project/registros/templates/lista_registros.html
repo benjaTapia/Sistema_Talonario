@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Registros{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-4">Lista de Registros</h1>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-2">
+        <label for="folio" class="form-label fw-bold">Folio</label>
+        <input type="text" name="folio" id="folio" class="form-control" placeholder="Ejemplo: 1/2024" value="{{ request.GET.folio }}">
+    </div>
+    <div class="col-md-3">
+        <label for="nombre" class="form-label fw-bold">Nombre</label>
+        <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Palabras Clave" value="{{ request.GET.nombre }}">
+    </div>
+    <div class="col-md-3">
+        <label for="tipo" class="form-label fw-bold">Tipo de Registro</label>
+        <select name="tipo" id="tipo" class="form-select">
+            <option value="">-- Selecciona Tipo --</option>
+            <option value="convenio_ingreso" {% if request.GET.tipo == "convenio_ingreso" %}selected{% endif %}>Convenio Ingreso</option>
+            <option value="convenio_egreso" {% if request.GET.tipo == "convenio_egreso" %}selected{% endif %}>Convenio Egreso</option>
+            <option value="aporte_ingreso" {% if request.GET.tipo == "aporte_ingreso" %}selected{% endif %}>Aporte Ingreso</option>
+            <option value="aporte_egreso" {% if request.GET.tipo == "aporte_egreso" %}selected{% endif %}>Aporte Egreso</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label for="fecha_inicio" class="form-label fw-bold">Fecha Inicio</label>
+        <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ request.GET.fecha_inicio }}">
+        <small class="text-muted">Filtra desde esta fecha.</small>
+    </div>
+    <div class="col-md-2">
+        <label for="fecha_fin" class="form-label fw-bold">Fecha Fin</label>
+        <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ request.GET.fecha_fin }}">
+        <small class="text-muted">Filtra hasta esta fecha.</small>
+    </div>
+    <div class="col-md-4 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-warning flex-grow-1"><i class="fas fa-filter"></i> Filtrar</button>
+        <a href="{% url 'registros:lista_registros' %}" class="btn btn-danger flex-grow-1"><i class="fas fa-redo"></i> Reiniciar</a>
+    </div>
+</form>
+
+<!-- Navegación entre tablas -->
+<div class="d-flex justify-content-center mb-4">
+    <button id="btn-convenio-ingreso" class="btn btn-primary me-2" onclick="showTab('convenio-ingreso')">Convenio Ingreso</button>
+    <button id="btn-convenio-egreso" class="btn btn-secondary me-2" onclick="showTab('convenio-egreso')">Convenio Egreso</button>
+    <button id="btn-aporte-ingreso" class="btn btn-secondary me-2" onclick="showTab('aporte-ingreso')">Aporte Ingreso</button>
+    <button id="btn-aporte-egreso" class="btn btn-secondary" onclick="showTab('aporte-egreso')">Aporte Egreso</button>
+</div>
+
+<!-- Contenedor de tablas -->
+<div id="tabla-contenido">
+
+    <!-- Tabla de Convenio Ingreso -->
+    <div id="tab-convenio-ingreso" class="tabla-registros {% if active_tab == 'convenio-ingreso' %}d-block{% else %}d-none{% endif %}">
+        <h3 class="text-center">Registros de Convenio Ingreso</h3>
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Folio</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Adjuntos</th>
+                    <th>Documento Firmado</th>
+                    <th>Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in convenio_ingreso_paginated %}
+                <tr>
+                    <td>{{ registro.folio }}</td>
+                    <td>{{ registro.nombre_registro }}</td>
+                    <td>{{ registro.tipo_registro }}</td>
+                    <td>{{ registro.fecha_creacion }}</td>
+                    <td>
+                        {% for archivo in registro.archivos.all %}
+                        {% if archivo.archivo and archivo.archivo.url %}
+                            <a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name }}</a><br>
+                        {% endif %}
+                    {% endfor %}
+                    {% if not registro.archivos.exists %}
+                        <span class="text-muted">Sin adjuntos</span>
+                    {% endif %}
+                    
+                    </td>
+                    <td>
+                        <a href="{% url 'registros:adjuntar_firmado' registro.pk %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-upload"></i> Adjuntar Documento Firmado
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-1">
+                            <a href="{% url 'registros:editar_registro' registro.pk %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{% url 'registros:detalle_registro' registro.pk %}?active_tab={{ active_tab }}&page={{ page }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Detalles
+                            </a>
+                            
+                            
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginación -->
+        <div class="d-flex justify-content-center">
+            {% if convenio_ingreso_paginated.has_other_pages %}
+            <ul class="pagination">
+                {% if convenio_ingreso_paginated.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page_convenio_ingreso={{ convenio_ingreso_paginated.previous_page_number }}&active_tab=convenio-ingreso">&laquo;</a>
+                </li>
+                {% endif %}
+                {% for num in convenio_ingreso_paginated.paginator.page_range %}
+                <li class="page-item {% if num == convenio_ingreso_paginated.number %}active{% endif %}">
+                    <a class="page-link" href="?page_convenio_ingreso={{ num }}&active_tab=convenio-ingreso">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if convenio_ingreso_paginated.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page_convenio_ingreso={{ convenio_ingreso_paginated.next_page_number }}&active_tab=convenio-ingreso">&raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tabla de Convenio Egreso -->
+    <div id="tab-convenio-egreso" class="tabla-registros {% if active_tab == 'convenio-egreso' %}d-block{% else %}d-none{% endif %}">
+        <h3 class="text-center">Registros de Convenio Egreso</h3>
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Folio</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Adjuntos</th>
+                    <th>Documento Firmado</th>
+                    <th>Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in convenio_egreso_paginated %}
+                <tr>
+                    <td>{{ registro.folio }}</td>
+                    <td>{{ registro.nombre_registro }}</td>
+                    <td>{{ registro.tipo_registro }}</td>
+                    <td>{{ registro.fecha_creacion }}</td>
+                    <td>
+                        {% for archivo in registro.archivos.all %}
+                        <a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name }}</a><br>
+                        {% endfor %}
+                        {% if not registro.archivos.exists %}
+                        <span class="text-muted">Sin adjuntos</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'registros:adjuntar_firmado' registro.pk %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-upload"></i> Adjuntar Documento Firmado
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-1">
+                            <a href="{% url 'registros:editar_registro' registro.pk %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{% url 'registros:detalle_registro' registro.pk %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Detalles
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginación -->
+        <div class="d-flex justify-content-center">
+            {% if convenio_egreso_paginated.has_other_pages %}
+            <ul class="pagination">
+                {% if convenio_egreso_paginated.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page_convenio_egreso={{ convenio_egreso_paginated.previous_page_number }}&active_tab=convenio-egreso">&laquo;</a>
+                </li>
+                {% endif %}
+                {% for num in convenio_egreso_paginated.paginator.page_range %}
+                <li class="page-item {% if num == convenio_egreso_paginated.number %}active{% endif %}">
+                    <a class="page-link" href="?page_convenio_egreso={{ num }}&active_tab=convenio-egreso">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if convenio_egreso_paginated.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page_convenio_egreso={{ convenio_egreso_paginated.next_page_number }}&active_tab=convenio-egreso">&raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tabla de Aporte Ingreso -->
+    <div id="tab-aporte-ingreso" class="tabla-registros {% if active_tab == 'aporte-ingreso' %}d-block{% else %}d-none{% endif %}">
+        <h3 class="text-center">Registros de Aporte Ingreso</h3>
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Folio</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Adjuntos</th>
+                    <th>Documento Firmado</th>
+                    <th>Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in aporte_ingreso_paginated %}
+                <tr>
+                    <td>{{ registro.folio }}</td>
+                    <td>{{ registro.nombre_registro }}</td>
+                    <td>{{ registro.tipo_registro }}</td>
+                    <td>{{ registro.fecha_creacion }}</td>
+                    <td>
+                        {% for archivo in registro.archivos_validos %}
+                            {% if archivo.archivo and archivo.archivo.url %}
+                                <a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name }}</a><br>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not registro.archivos_validos %}
+                            <span class="text-muted">Sin adjuntos</span>
+                        {% endif %}
+                    </td>
+                    
+                                                                          
+                    <td>
+                        <a href="{% url 'registros:adjuntar_firmado' registro.pk %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-upload"></i> Adjuntar Documento Firmado
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-1">
+                            <a href="{% url 'registros:editar_registro' registro.pk %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{% url 'registros:detalle_registro' registro.pk %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Detalles
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginación -->
+        <div class="d-flex justify-content-center">
+            {% if aporte_ingreso_paginated.has_other_pages %}
+            <ul class="pagination">
+                {% if aporte_ingreso_paginated.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page_aporte_ingreso={{ aporte_ingreso_paginated.previous_page_number }}&active_tab=aporte-ingreso">&laquo;</a>
+                </li>
+                {% endif %}
+                {% for num in aporte_ingreso_paginated.paginator.page_range %}
+                <li class="page-item {% if num == aporte_ingreso_paginated.number %}active{% endif %}">
+                    <a class="page-link" href="?page_aporte_ingreso={{ num }}&active_tab=aporte-ingreso">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if aporte_ingreso_paginated.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page_aporte_ingreso={{ aporte_ingreso_paginated.next_page_number }}&active_tab=aporte-ingreso">&raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tabla de Aporte Egreso -->
+    <div id="tab-aporte-egreso" class="tabla-registros {% if active_tab == 'aporte-egreso' %}d-block{% else %}d-none{% endif %}">
+        <h3 class="text-center">Registros de Aporte Egreso</h3>
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Folio</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Adjuntos</th>
+                    <th>Documento Firmado</th>
+                    <th>Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in aporte_egreso_paginated %}
+                <tr>
+                    <td>{{ registro.folio }}</td>
+                    <td>{{ registro.nombre_registro }}</td>
+                    <td>{{ registro.tipo_registro }}</td>
+                    <td>{{ registro.fecha_creacion }}</td>
+                    <td>
+                        {% for archivo in registro.archivos.all %}
+                            {% if archivo.archivo and archivo.archivo.url %}
+                                <a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name }}</a><br>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not registro.archivos.exists %}
+                            <span class="text-muted">Sin adjuntos</span>
+                        {% endif %}
+                    </td>
+                                                                      
+                    <td>
+                        <a href="{% url 'registros:adjuntar_firmado' registro.pk %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-upload"></i> Adjuntar Documento Firmado
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-1">
+                            <a href="{% url 'registros:editar_registro' registro.pk %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{% url 'registros:detalle_registro' registro.pk %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Detalles
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginación -->
+        <div class="d-flex justify-content-center">
+            {% if aporte_egreso_paginated.has_other_pages %}
+            <ul class="pagination">
+                {% if aporte_egreso_paginated.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page_aporte_egreso={{ aporte_egreso_paginated.previous_page_number }}&active_tab=aporte-egreso">&laquo;</a>
+                </li>
+                {% endif %}
+                {% for num in aporte_egreso_paginated.paginator.page_range %}
+                <li class="page-item {% if num == aporte_egreso_paginated.number %}active{% endif %}">
+                    <a class="page-link" href="?page_aporte_egreso={{ num }}&active_tab=aporte-egreso">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if aporte_egreso_paginated.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page_aporte_egreso={{ aporte_egreso_paginated.next_page_number }}&active_tab=aporte-egreso">&raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+
+</div>
+
+<div class="d-flex justify-content-center gap-3 mt-4">
+    <a href="{% url 'registros:exportar_excel' %}" class="btn btn-success fw-bold px-4 py-2">
+        <i class="fas fa-file-excel"></i> Exportar a Excel
+    </a>
+    <a href="{% url 'registros:crear_registro' %}" class="btn btn-warning fw-bold px-4 py-2">
+        <i class="fas fa-plus"></i> Crear Nuevo Registro
+    </a>
+    <a href="{% url 'registros:historial-archivos' %}" class="btn btn-danger fw-bold px-4 py-2">
+        <i class="fas fa-trash-alt"></i> Archivos Eliminados
+    </a>
+    <a href="{% url 'registros:contabilidad' %}" class="btn btn-info fw-bold px-4 py-2">
+        <i class="fas fa-calculator"></i> Ver Contabilidad
+    </a>
+</div>
+
+<script>
+    function showTab(tab) {
+        const tabs = ['convenio-ingreso', 'convenio-egreso', 'aporte-ingreso', 'aporte-egreso'];
+    
+        // Ocultar todas las pestañas y restablecer botones
+        tabs.forEach(t => {
+            document.getElementById(`tab-${t}`).classList.add('d-none');
+            document.getElementById(`btn-${t}`).classList.remove('btn-primary');
+            document.getElementById(`btn-${t}`).classList.add('btn-secondary');
+        });
+    
+        // Mostrar la pestaña activa y ajustar el botón correspondiente
+        document.getElementById(`tab-${tab}`).classList.remove('d-none');
+        document.getElementById(`btn-${tab}`).classList.remove('btn-secondary');
+        document.getElementById(`btn-${tab}`).classList.add('btn-primary');
+    
+        // Reaplicar estilos a los botones dentro de la pestaña activa
+        const visibleButtons = document.querySelectorAll(`#tab-${tab} .btn`);
+        visibleButtons.forEach(button => {
+            if (button.classList.contains('btn-info')) {
+                button.classList.add('btn-sm'); // Asegurarse de que los estilos de tamaño estén presentes
+            }
+        });
+    
+        // Actualizar la URL con el parámetro de la pestaña activa
+        const url = new URL(window.location.href);
+        url.searchParams.set('active_tab', tab);
+        window.history.pushState({}, '', url);
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('active_tab') || 'convenio-ingreso';
+    
+        // Mostrar la pestaña activa al cargar la página
+        showTab(activeTab);
+    });
+    
+</script>
+
+{% endblock %}

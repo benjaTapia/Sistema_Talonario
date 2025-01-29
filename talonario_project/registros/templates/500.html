@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Página No Encontrada</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa; /* Un fondo gris claro para profesionalismo */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333; /* Un texto neutro para alta legibilidad */
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 30px;
+            max-width: 600px;
+            background: white;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .error-container h1 {
+            font-size: 5rem;
+            color: #ff6f61; /* Un color llamativo para el número del error */
+            margin: 0;
+        }
+
+        .error-container h2 {
+            font-size: 2rem;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .error-container p {
+            font-size: 1.1rem;
+            color: #666;
+            margin: 15px 0;
+        }
+
+        .error-container a {
+            text-decoration: none;
+            color: white;
+            background-color: #007bff; /* Un azul profesional */
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .error-container a:hover {
+            background-color: #0056b3; /* Oscurece el azul al pasar el ratón */
+        }
+
+        .error-container .icon {
+            font-size: 4rem;
+            color: #ff6f61;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .error-container {
+                padding: 20px;
+            }
+
+            .error-container h1 {
+                font-size: 4rem;
+            }
+
+            .error-container h2 {
+                font-size: 1.5rem;
+            }
+
+            .error-container p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="icon">⚠️</div>
+        <h1>500</h1>
+        <h2>Página No Encontrada</h2>
+        <p>Lo sentimos, la página que buscas no existe o ha sido movida.</p>
+        <a href="/">Volver al Inicio</a>
+    </div>
+</body>
+</html>

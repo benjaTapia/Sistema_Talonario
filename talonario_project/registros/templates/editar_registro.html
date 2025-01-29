@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load custom_filters %}
+{% block title %}Editar Registro{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-4">Editar Registro</h1>
+<form method="post" enctype="multipart/form-data" class="row g-4" id="editarRegistroForm">
+    {% csrf_token %}
+
+    <!-- Errores Globales -->
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for field, errors in form.errors.items %}
+            <li>
+                <strong>{{ field.label }}</strong>:
+                {% for error in errors %}
+                {{ error }}
+                {% endfor %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Información General -->
+    <fieldset class="card p-3">
+        <legend class="fw-bold text-primary">Información General</legend>
+        <div class="row">
+            <div class="col-md-6">
+                {{ form.nombre_registro.label_tag }}
+                {{ form.nombre_registro|add_class:"form-control" }}
+            </div>
+            <div class="col-md-6">
+                {{ form.concepto.label_tag }}
+                {{ form.concepto|add_class:"form-control" }}
+            </div>
+            <div class="col-md-4">
+                <label for="monto" class="form-label fw-bold">Monto Total</label>
+                <input type="text" name="monto" id="monto" class="form-control" placeholder="Se calculará automáticamente" readonly>
+            </div>            
+            <div class="col-md-4">
+                {{ form.cheque_numero.label_tag }}
+                <input type="text" name="cheque_numero" class="form-control" value="{{ registro.cheque_numero|default_if_none:'No especificado' }}" maxlength="20">
+            </div>
+            <div class="col-md-4">
+                {{ form.banco.label_tag }}
+                {{ form.banco|add_class:"form-control" }}
+            </div>
+            <div class="col-12">
+                {{ form.detalle.label_tag }}
+                {{ form.detalle|add_class:"form-control" }}
+            </div>
+            <div class="col-md-6">
+                {{ form.tipo_registro.label_tag }}
+                {{ form.tipo_registro|add_class:"form-control" }}
+            </div>
+        </div>
+    </fieldset>
+
+    <!-- Movimientos Contables -->
+    <fieldset class="card p-3 mt-4">
+        <legend class="fw-bold text-primary">Movimientos Contables</legend>
+        <p class="text-muted">Debe: Lo que "entra" o aumenta en valor. / Haber: Lo que "sale" o disminuye en valor.</p>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label for="debe" class="form-label fw-bold">Debe</label>
+                <div id="debe-container">
+                    {% for transaccion in transacciones_debe %}
+                    <div class="input-group mb-2">
+                        <input type="text" name="debe[]" class="form-control debe-input" value="{{ transaccion.debe|floatformat:0 }}" maxlength="20" oninput="updateTotals()">
+                        <button type="button" class="btn btn-danger remove-field" onclick="removeField(this)">-</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn btn-outline-success add-field" data-target="#debe-container" data-name="debe[]">
+                    + Agregar Debe
+                </button>
+                <p class="text-muted mt-2">Total Debe: <span id="total-debe">{{ total_debe|floatformat:0 }}</span></p>
+            </div>
+            <div class="col-md-6">
+                <label for="haber" class="form-label fw-bold">Haber</label>
+                <div id="haber-container">
+                    {% for transaccion in transacciones_haber %}
+                    <div class="input-group mb-2">
+                        <input type="text" name="haber[]" class="form-control haber-input" value="{{ transaccion.haber|floatformat:0 }}" maxlength="20" oninput="updateTotals()">
+                        <button type="button" class="btn btn-danger remove-field" onclick="removeField(this)">-</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn btn-outline-success add-field" data-target="#haber-container" data-name="haber[]">
+                    + Agregar Haber
+                </button>
+                <p class="text-muted mt-2">Total Haber: <span id="total-haber">{{ total_haber|floatformat:0 }}</span></p>
+            </div>
+        </div>
+    </fieldset>
+
+    <!-- Archivos Adjuntos -->
+    <fieldset class="card p-3 mt-4">
+        <legend class="fw-bold text-primary">Archivos Adjuntos</legend>
+        <p class="text-muted">Por favor, adjunte los archivos necesarios, si es más de un adjunto agregue en un nuevo campo y proporcione una descripción para cada uno (opconal). ¡No añada varios Adjuntos en un solo campo!</p>
+        <div id="adjuntos-container">
+            <div class="input-group mb-3">
+                <input type="file" name="archivos[]" class="form-control">
+                <input type="text" name="descripciones[]" class="form-control" placeholder="Descripción (opcional)">
+                <button type="button" class="btn btn-danger remove-adjunto">-</button>
+            </div>
+        </div>
+        <button type="button" id="add-adjunto" class="btn btn-outline-success">+ Añadir Archivo</button>
+    </fieldset>
+
+    <!-- Archivos Existentes -->
+    <fieldset class="card p-3 mt-4">
+        <legend class="fw-bold text-primary">Archivos Adjuntos Existentes</legend>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Archivo</th>
+                    <th>Descripción</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for archivo in archivos %}
+                <tr>
+                    <td><a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name }}</a></td>
+                    <td>{{ archivo.descripcion }}</td>
+                    <td><input type="checkbox" name="eliminar_adjuntos" value="{{ archivo.id }}"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </fieldset>
+
+    <!-- Botones de acción -->
+    <div class="col-12 text-center mt-4">
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center">
+            <i class="fas fa-save me-2"></i> Guardar
+        </button>
+        <a href="{% url 'registros:lista_registros' %}" 
+           class="btn btn-primary d-inline-flex align-items-center" 
+           style="background-color: #dc3545; border-color: #dc3545; margin-left: 10px;">
+            <i class="fas fa-arrow-left me-2"></i> Volver
+        </a>
+    </div>
+    
+</form>
+
+<!-- Modal de Éxito -->
+<div id="successModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:white; padding:20px; border-radius:10px; text-align:center; max-width:400px; width:80%;">
+        <i class="fas fa-check-circle" style="color:green; font-size:50px;"></i>
+        <h2>Registro editado exitosamente</h2>
+        <p>Redirigiendo a la lista de registros...</p>
+    </div>
+</div>
+
+<script>
+    function validateNumericInput(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
+    function updateTotals() {
+        let totalDebe = 0, totalHaber = 0;
+    
+        // Sumar los valores del Debe
+        document.querySelectorAll('.debe-input').forEach(input => {
+            totalDebe += parseFloat(input.value) || 0;
+        });
+    
+        // Sumar los valores del Haber
+        document.querySelectorAll('.haber-input').forEach(input => {
+            totalHaber += parseFloat(input.value) || 0;
+        });
+    
+        // Actualizar los totales en el HTML
+        document.getElementById('total-debe').innerText = new Intl.NumberFormat('es-CL').format(totalDebe);
+        document.getElementById('total-haber').innerText = new Intl.NumberFormat('es-CL').format(totalHaber);
+    
+        // Calcular y actualizar el campo "Monto"
+        const totalMonto = totalDebe + totalHaber;
+        document.getElementById('monto').value = totalMonto;  // Campo "Monto" actualizado
+    }
+    
+
+    function removeField(button) {
+        button.parentElement.remove();
+        updateTotals();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateTotals();
+
+        document.querySelectorAll('.add-field').forEach(button => {
+            button.addEventListener('click', () => {
+                const container = document.querySelector(button.dataset.target);
+                const inputName = button.dataset.name;
+
+                const newField = document.createElement('div');
+                newField.classList.add('input-group', 'mb-2');
+                newField.innerHTML = `
+                    <input type="text" name="${inputName}" class="form-control ${inputName.includes('debe') ? 'debe-input' : 'haber-input'}" placeholder="Ingrese valor" oninput="validateNumericInput(this); updateTotals();">
+                    <button type="button" class="btn btn-danger remove-field" onclick="removeField(this)">-</button>
+                `;
+                container.appendChild(newField);
+
+                updateTotals(); // Asegura que el total se actualice al agregar el nuevo campo.
+            });
+        });
+
+        document.getElementById('add-adjunto').addEventListener('click', () => {
+            const container = document.getElementById('adjuntos-container');
+            const newField = document.createElement('div');
+            newField.classList.add('input-group', 'mb-3');
+            newField.innerHTML = `
+                <input type="file" name="archivos[]" class="form-control">
+                <input type="text" name="descripciones[]" class="form-control" placeholder="Descripción (opcional)">
+                <button type="button" class="btn btn-danger remove-adjunto">-</button>
+            `;
+            container.appendChild(newField);
+
+            newField.querySelector('.remove-adjunto').addEventListener('click', () => {
+                newField.remove();
+            });
+        });
+
+        const form = document.getElementById('editarRegistroForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('successModal').style.display = 'flex';
+            setTimeout(() => {
+                form.submit();
+            }, 2000);
+        });
+    });
+</script>
+
+{% endblock %}

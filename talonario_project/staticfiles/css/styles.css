@@ -1,0 +1,235 @@
+/* ---------- Dropdown de Usuario ---------- */
+.navbar .dropdown-menu {
+    min-width: 200px;
+    right: 0;
+    left: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.navbar .dropdown-toggle {
+    color: white; /* Color por defecto */
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: transparent; /* Fondo transparente inicialmente */
+    border: none; /* Sin bordes */
+    padding: 5px 15px;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Suaviza los cambios */
+}
+
+.navbar .dropdown-toggle:hover {
+    background-color: white; /* Fondo blanco al pasar el puntero */
+    color: black; /* Letras negras con fondo blanco */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+.navbar .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+}
+
+.navbar .dropdown-item:hover {
+    background-color: #f1f1f1; /* Fondo claro al pasar el mouse */
+    color: #008f39; /* Verde del logo */
+}
+
+.navbar .dropdown-item i {
+    font-size: 1.2rem;
+    color: #008f39; /* Verde del logo */
+}
+
+.navbar .dropdown-item.text-danger i {
+    color: #dc3545;
+}
+
+
+/* ---------- Fondo del Login ---------- */
+body.login-body {
+    background-image: url('../img/fondo.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* ---------- Estilo para la Página de Editar Perfil ---------- */
+.editar-perfil-container {
+    min-height: 90vh; /* Altura total para centrar */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Mueve el formulario hacia arriba */
+    align-items: center;
+    position: relative;
+    padding: 20px;
+}
+
+.card {
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-top: 50px; /* Ajuste adicional para la posición */
+    z-index: 10; 
+}
+
+.card h2 {
+    font-size: 1.8rem;
+    color: #008f39; /* Verde del logo */
+    text-align: center; /* Centra el texto del encabezado */
+}
+
+.card .btn-primary {
+    background-color: #ff9f43; /* Naranja del logo */
+    border: none;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.card .btn-primary:hover {
+    background-color: #d87c30; /* Naranja oscuro */
+}
+
+.card .btn-secondary {
+    text-transform: uppercase;
+    font-weight: bold;
+    background-color: #e0e0e0; /* Gris claro */
+    border: none;
+    color: #333;
+}
+
+.card .btn-secondary:hover {
+    background-color: #cfcfcf;
+}
+
+/* Logo Posicionado en el Cuadro Rojo */
+.logo-fondo {
+    position: absolute;
+    bottom: 20px; 
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.8; /* Ajusta la opacidad para mejor visibilidad */
+    z-index: 1; 
+    max-width: 60%; /* Tamaño más controlado */
+    height: auto; /* Mantiene la proporción */
+}
+
+/* ---------- Botones ---------- */
+.btn-primary {
+    background-color: #ff9f43; /* Naranja del logo */
+    border-color: #ff9f43;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: #d87c30;
+    border-color: #d87c30;
+}
+
+.btn-secondary {
+    background-color: #e0e0e0;
+    border-color: #e0e0e0;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.btn-secondary:hover {
+    background-color: #cfcfcf;
+    border-color: #cfcfcf;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #fff;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: #fff;
+}
+
+
+/* Contenedor principal del mensaje de error */
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo del encabezado del mensaje */
+.alert-danger strong {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Lista de errores */
+.alert-danger ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Cada error dentro de la lista */
+.alert-danger ul li {
+    margin-bottom: 5px;
+    padding-left: 20px;
+    position: relative;
+    font-weight: normal;
+}
+
+/* Icono al lado de cada error */
+.alert-danger ul li::before {
+    content: "⚠️";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 18px;
+    color: #842029;
+}
+
+/* Transiciones para mostrar/ocultar el mensaje */
+.alert-danger {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-message {
+    position: absolute;
+    top: 60px; /* Ajustar según la altura de tu navbar */
+    right: 20px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    z-index: 1050;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+

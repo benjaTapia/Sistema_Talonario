@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Registro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 1cm 2cm 4cm 2cm; /* Márgenes ajustados */
+        }
+
+        /* Sistema Talonario arriba */
+        .top-banner {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px; /* Reducido */
+        }
+
+        /* Encabezado verde */
+        .header {
+            background-color: #28a745;
+            color: white;
+            padding: 5px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 5px; /* Espacio reducido */
+        }
+
+        .content {
+            margin-top: 0; /* Eliminar espacio superior */
+        }
+
+        .section {
+            margin-bottom: 10px; /* Reducido el espacio entre secciones */
+            page-break-inside: avoid; /* Evitar salto de página */
+        }
+
+        .section h2 {
+            color: #28a745;
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 3px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            page-break-inside: avoid; /* Evitar salto de página en tabla */
+        }
+
+        .info-table td, .info-table th {
+            padding: 6px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        .info-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+
+        .long-text-section {
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            page-break-inside: avoid;
+            word-wrap: break-word; /* Ajustar texto largo */
+        }
+
+        /* Espacio vacío en el pie de página */
+        .footer-blank {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4cm; /* Espacio reservado para firmas */
+        }
+
+        /* Página nueva para archivos adjuntos */
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* Archivos Adjuntos */
+        .files ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .files li {
+            margin-bottom: 10px;
+        }
+
+        .files a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .files a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    {% load humanize %}
+
+    <!-- Sistema Talonario arriba del todo -->
+    <div class="top-banner">
+        Sistema Talonario &copy; {{ now|date:"Y" }}
+    </div>
+
+    <!-- Encabezado verde -->
+    <div class="header">
+        <h1>Detalle del Registro</h1>
+        <p>Folio: {{ registro.folio }}</p>
+        <p>Fecha de Creación: {{ registro.fecha_creacion|date:"d M Y, h:i a" }}</p>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="content">
+        <!-- Información del Registro -->
+        <div class="section">
+            <h2>Información del Registro</h2>
+            <table class="info-table">
+                <tr>
+                    <th>Nombre</th>
+                    <td>{{ registro.nombre_registro }}</td>
+                    <th>Tipo</th>
+                    <td>{{ registro.tipo_registro }}</td>
+                </tr>
+                <tr>
+                    <th>Monto Total</th>
+                    <td>{{ registro.monto|floatformat:0|intcomma }}</td>
+                    <th>Cheque Número</th>
+                    <td>{{ registro.cheque_numero|default:"No especificado" }}</td>
+                </tr>
+                <tr>
+                    <th>Total Debe</th>
+                    <td>{{ total_debe|floatformat:0|intcomma }}</td>
+                    <th>Total Haber</th>
+                    <td>{{ total_haber|floatformat:0|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th>Banco</th>
+                    <td colspan="3">{{ registro.banco|default:"No especificado" }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Concepto -->
+        <div class="long-text-section">
+            <h3>Concepto</h3>
+            <div>{{ registro.concepto|default:"No especificado" }}</div>
+        </div>
+
+        <!-- Detalle -->
+        <div class="long-text-section">
+            <h3>Detalle</h3>
+            <div>{{ registro.detalle|default:"No hay detalles adicionales" }}</div>
+        </div>
+    </div>
+
+    <!-- Pie de página vacío -->
+    <div class="footer-blank"></div>
+
+    <!-- Nueva Página para Archivos Adjuntos -->
+    <div class="page-break"></div>
+    <div class="content">
+        <!-- Archivos Adjuntos -->
+        <div class="section">
+            <h2>Archivos Adjuntos</h2>
+            <div class="files">
+                <ul>
+                    {% for archivo in registro.archivos.all %}
+                    <li>
+                        <a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name }}</a>
+                        <p><strong>Descripción:</strong> {{ archivo.descripcion|default:"Sin descripción" }}</p>
+                    </li>
+                    {% empty %}
+                    <li>No hay archivos adjuntos disponibles.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

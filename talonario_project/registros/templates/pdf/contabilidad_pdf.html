@@ -1,0 +1,194 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Contabilidad</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        h1, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: right;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .no-data {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Contabilidad</h1>
+
+    <!-- Estado de Resultados -->
+    <h3>Estado de Resultados</h3>
+    <table>
+        <thead>
+            <tr>
+                <th class="text-left">Descripción</th>
+                <th>Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-left">Total Ingresos</td>
+                <td>{{ estado_resultados.ingresos|add_commas }}</td>
+            </tr>
+            <tr>
+                <td class="text-left">Total Egresos</td>
+                <td>{{ estado_resultados.egresos|add_commas }}</td>
+            </tr>
+            <tr>
+                <td class="text-left">Ganancia/Pérdida</td>
+                <td>{{ estado_resultados.ganancia_perdida|add_commas }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Convenio Ingreso -->
+    <h3>Registros de Convenio Ingreso</h3>
+    <table>
+        <thead>
+            <tr>
+                <th class="text-left">Fecha</th>
+                <th class="text-left">Folio</th>
+                <th class="text-left">Descripción</th>
+                <th>Debe</th>
+                <th>Haber</th>
+                <th>Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in convenios_ingreso %}
+            <tr>
+                <td class="text-left">{{ registro.fecha_creacion|date:"Y-m-d" }}</td>
+                <td class="text-left">{{ registro.folio }}</td>
+                <td class="text-left">{{ registro.nombre_registro }}</td>
+                <td>{{ registro.debe|add_commas }}</td>
+                <td>{{ registro.haber|add_commas }}</td>
+                <td>{{ registro.saldo|add_commas }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="no-data">No hay registros de Convenio Ingreso.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Convenio Egreso -->
+    <h3>Registros de Convenio Egreso</h3>
+    <table>
+        <thead>
+            <tr>
+                <th class="text-left">Fecha</th>
+                <th class="text-left">Folio</th>
+                <th class="text-left">Descripción</th>
+                <th>Debe</th>
+                <th>Haber</th>
+                <th>Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in convenios_egreso %}
+            <tr>
+                <td class="text-left">{{ registro.fecha_creacion|date:"Y-m-d" }}</td>
+                <td class="text-left">{{ registro.folio }}</td>
+                <td class="text-left">{{ registro.nombre_registro }}</td>
+                <td>{{ registro.debe|add_commas }}</td>
+                <td>{{ registro.haber|add_commas }}</td>
+                <td>{{ registro.saldo|add_commas }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="no-data">No hay registros de Convenio Egreso.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Aporte Ingreso -->
+    <h3>Registros de Aporte Ingreso</h3>
+    <table>
+        <thead>
+            <tr>
+                <th class="text-left">Fecha</th>
+                <th class="text-left">Folio</th>
+                <th class="text-left">Descripción</th>
+                <th>Debe</th>
+                <th>Haber</th>
+                <th>Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in aportes_ingreso %}
+            <tr>
+                <td class="text-left">{{ registro.fecha_creacion|date:"Y-m-d" }}</td>
+                <td class="text-left">{{ registro.folio }}</td>
+                <td class="text-left">{{ registro.nombre_registro }}</td>
+                <td>{{ registro.debe|add_commas }}</td>
+                <td>{{ registro.haber|add_commas }}</td>
+                <td>{{ registro.saldo|add_commas }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="no-data">No hay registros de Aporte Ingreso.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Aporte Egreso -->
+    <h3>Registros de Aporte Egreso</h3>
+    <table>
+        <thead>
+            <tr>
+                <th class="text-left">Fecha</th>
+                <th class="text-left">Folio</th>
+                <th class="text-left">Descripción</th>
+                <th>Debe</th>
+                <th>Haber</th>
+                <th>Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in aportes_egreso %}
+            <tr>
+                <td class="text-left">{{ registro.fecha_creacion|date:"Y-m-d" }}</td>
+                <td class="text-left">{{ registro.folio }}</td>
+                <td class="text-left">{{ registro.nombre_registro }}</td>
+                <td>{{ registro.debe|add_commas }}</td>
+                <td>{{ registro.haber|add_commas }}</td>
+                <td>{{ registro.saldo|add_commas }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="no-data">No hay registros de Aporte Egreso.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

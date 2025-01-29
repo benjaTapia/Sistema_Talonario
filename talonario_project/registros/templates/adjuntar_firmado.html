@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Adjuntar Documento Firmado{% endblock %}
+
+{% block content %}
+<!-- Contenedor principal -->
+<div class="container mt-5">
+    <!-- Encabezado con logo -->
+    <div class="text-center mb-4">
+        <img src="{% static 'img/Logos-02.png' %}" alt="Logo San Joaquín" style="max-height: 100px; margin-bottom: 20px;">
+        <h1 class="fw-bold" style="color: #008f39;">Adjuntar Documento Firmado</h1>
+    </div>
+
+    <!-- Tarjeta de contenido -->
+    <div class="card shadow-lg p-4 mx-auto" style="max-width: 600px;">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="archivo_firmado" class="form-label fw-bold">Subir Documento Firmado</label>
+                <input type="file" name="archivo_firmado" id="archivo_firmado" class="form-control" required>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success fw-bold">
+                    <i class="fas fa-upload"></i> Adjuntar
+                </button>
+                <a href="{% url 'registros:lista_registros' %}" class="btn btn-secondary fw-bold">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Logo en el fondo -->
+<div class="logo-fondo-container">
+    <img src="{% static 'img/Logos-02.png' %}" alt="Logo San Joaquín" class="logo-fondo">
+</div>
+{% endblock %}

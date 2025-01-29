@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% load humanize %} <!-- Carga del filtro humanize -->
+
+{% block title %}Detalle del Registro{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold text-success">Detalle del Registro</h1>
+        <p class="text-muted">Visualiza los detalles y archivos adjuntos del registro seleccionado.</p>
+    </div>
+
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Folio: {{ registro.folio }}</h4>
+            <small class="text-white">{{ registro.fecha_creacion|date:"d M Y, h:i a" }}</small>
+        </div>
+        <div class="card-body">
+            <!-- Información general del registro -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="card-text"><strong>Nombre del Registro:</strong></p>
+                    <p class="border rounded bg-light p-2">{{ registro.nombre_registro }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="card-text"><strong>Tipo de Registro:</strong></p>
+                    <p class="border rounded bg-light p-2">{{ registro.tipo_registro }}</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <p class="card-text"><strong>Concepto:</strong></p>
+                    <p class="border rounded bg-light p-3">{{ registro.concepto }}</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="card-text"><strong>Monto Total:</strong></p>
+                    <p class="border rounded bg-light p-2">
+                        {{ registro.monto|floatformat:0|intcomma }}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="card-text"><strong>Cheque Número:</strong></p>
+                    <p class="border rounded bg-light p-2">
+                        {% if registro.cheque_numero %}
+                            {{ registro.cheque_numero|cut:","|cut:"." }}
+                        {% else %}
+                            No especificado
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="card-text"><strong>Banco:</strong></p>
+                    <p class="border rounded bg-light p-2">{{ registro.banco|default:"No especificado" }}</p>
+                </div>
+            </div>
+
+            <!-- Totales de Debe y Haber -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="card-text"><strong>Total Debe:</strong></p>
+                    <p class="border rounded bg-light p-2">
+                        {{ total_debe|floatformat:0|intcomma }}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="card-text"><strong>Total Haber:</strong></p>
+                    <p class="border rounded bg-light p-2">
+                        {{ total_haber|floatformat:0|intcomma }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Detalle adicional -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <p class="card-text"><strong>Detalle Adicional:</strong></p>
+                    <p class="border rounded bg-light p-3">{{ registro.detalle|default:"No hay detalles adicionales" }}</p>
+                </div>
+            </div>
+
+            <!-- Archivos adjuntos -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <p class="card-text"><strong>Archivos Adjuntos:</strong></p>
+                    <ul class="list-group list-group-flush">
+                        {% for archivo in archivos %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{{ archivo.archivo.url }}" target="_blank">
+                                <i class="fas fa-file-alt"></i> {{ archivo.archivo.name }}
+                            </a>
+                            {% if archivo.descripcion %}
+                            <em class="text-muted">{{ archivo.descripcion }}</em>
+                            {% else %}
+                            <em class="text-muted">Sin descripción</em>
+                            {% endif %}
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No hay archivos adjuntos disponibles.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="text-center mt-4">
+        <a href="{% url 'registros:lista_registros' %}?active_tab={{ active_tab }}&page={{ page }}" class="btn btn-warning btn-lg text-white">
+            <i class="fas fa-arrow-left"></i> Volver a la Lista
+        </a>
+        <a href="{% url 'registros:generar_pdf' registro.pk %}" target="_blank" class="btn btn-success btn-lg text-white">
+            <i class="fas fa-file-pdf"></i> Generar PDF
+        </a>
+    </div>
+</div>
+{% endblock %}
